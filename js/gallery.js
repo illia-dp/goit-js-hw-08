@@ -66,8 +66,6 @@ const images = [
   },
 ];
 
-const gallery = document.querySelector(".gallery");
-
 const galleryItems = images
   .map(
     ({ preview, original, description }) => `
@@ -85,20 +83,30 @@ const galleryItems = images
   )
   .join("");
 
+const gallery = document.querySelector(".gallery");
 gallery.innerHTML = galleryItems;
 
-gallery.addEventListener("click", (event) => {
+gallery.addEventListener("click", clickOnImage);
+
+function clickOnImage(event) {
   event.preventDefault();
 
-  const imgElement = event.target.closest(".gallery-image");
-  if (!imgElement) return;
+  if (event.target.nodeName !== "IMG") return;
 
-  const originalImage = imgElement.dataset.source;
-  const altText = imgElement.alt;
+  const originalImage = event.target.dataset.source;
+  const altText = event.target.alt;
 
   const instance = basicLightbox.create(`
     <img src="${originalImage}" alt="${altText}" width="1400" height="900" />
   `);
   instance.show();
-  console.log("Посилання на велике зображення:", originalImage);
-});
+
+  // Додаю самостійно, бо у бібліотеці не знайшов реалізації кнопки
+  const onEscClose = (e) => {
+    if (e.key === "Escape") {
+      instance.close();
+      document.removeEventListener("keydown", onEscClose);
+    }
+  };
+  document.addEventListener("keydown", onEscClose);
+}
